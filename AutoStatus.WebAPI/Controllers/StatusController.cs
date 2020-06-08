@@ -6,8 +6,6 @@ using System.Web.Http;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace AutoStatus.WebAPI.Controllers
 {
     // [Route("api/[controller]")]
@@ -27,7 +25,6 @@ namespace AutoStatus.WebAPI.Controllers
         [Route("api/status/get")]
         public APIResponse Get()
         {
-            // return "sample data";
             return statusSender.GetStatus().Result;
         }
 
@@ -42,7 +39,6 @@ namespace AutoStatus.WebAPI.Controllers
         [Route("api/status/notifyUser")]
         public bool NotifyUser([FromBody] string userMailAddress)
         {
-            //return false;
             return statusSender.NotifyUser(userMailAddress);
         }
 
