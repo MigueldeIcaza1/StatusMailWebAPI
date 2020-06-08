@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using AutoStatus.WebAPI.Enums;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 
@@ -26,6 +27,13 @@ namespace AutoStatus.WebAPI.Controllers
         public APIResponse Get()
         {
             return statusSender.GetStatus().Result;
+        }
+
+        [HttpGet]
+        [Route("api/status/get")]
+        public APIResponse Get(string statusType)
+        {
+            return statusSender.GetStatus(statusType).Result;
         }
 
         [HttpPost]
