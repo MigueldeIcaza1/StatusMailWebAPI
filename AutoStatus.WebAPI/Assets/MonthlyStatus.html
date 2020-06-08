@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+
+        body {
+            font-size: 10pt;
+            color: rgb(0, 0, 0);
+            font-family: Arial;
+        }
+
+        table {
+            table-layout: fixed;
+            font-size: 10pt;
+            width: 0px;
+            border-collapse: collapse;
+            border: none;
+        }
+
+        tr {
+            height: 25px;
+        }
+
+        th {
+            border-width: 1px;
+            border-style: solid;
+            border-color: rgb(0, 0, 0);
+            overflow: hidden;
+            padding: 2px 3px;
+            vertical-align: top;
+            overflow-wrap: break-word;
+            text-align: center;
+            border-image: initial;
+        }
+        td {
+            border-width: 1px; 
+            border-style: solid; 
+            border-color: rgb(204, 204, 204) rgb(0, 0, 0) rgb(0, 0, 0); 
+            overflow: hidden;
+            padding: 2px 3px;
+            vertical-align: top;
+            overflow-wrap: break-word;
+            border-image: initial;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .link {
+            text-decoration-line: underline;
+            color: rgb(16, 110, 190);
+        }
+
+
+    </style>
+</head>
+<body>
+    Hi Ross, <br/> Please find the status update below: <br/>
+    <table cellspacing="0" cellpadding="0" dir="ltr" border="1">
+    <colgroup><col width="289"><col width="372"><col width="99"><col width="146"><col width="80"><col width="146"></colgroup>
+    <tbody>
+        <tr>
+            <th>Work Item</th>
+            <th>Title</th>
+            <th>ID</th>
+            <th>Assigned To</th>
+            <th>State</th>
+            <th>Completed Work</th>
+        </tr>
+         #StatusRows#
+    </tbody>
+    </table>
+</body>
+</html>
