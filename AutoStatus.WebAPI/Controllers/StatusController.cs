@@ -22,12 +22,12 @@ namespace AutoStatus.WebAPI.Controllers
             statusSender = _statusSender;
         }
 
-        [HttpGet]
-        [Route("api/status/get")]
-        public APIResponse Get()
-        {
-            return statusSender.GetStatus().Result;
-        }
+        //[HttpGet]
+        //[Route("api/status/get")]
+        //public APIResponse Get()
+        //{
+        //    return statusSender.GetStatus().Result;
+        //}
 
         [HttpGet]
         [Route("api/status/get")]

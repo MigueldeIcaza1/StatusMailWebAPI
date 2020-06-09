@@ -17,7 +17,8 @@ namespace EmailSender
 
         public static string GetEmailBody(List<StatusRecord> workItems)
         {
-            var rootPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+            //var rootPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
             var monthlyStatusHTMLPath = rootPath + "/Assets/MonthlyStatus.html";
             var monthlyStatusHtml = File.ReadAllText(monthlyStatusHTMLPath);
 
