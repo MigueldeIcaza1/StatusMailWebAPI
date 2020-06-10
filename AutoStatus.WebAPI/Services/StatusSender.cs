@@ -52,6 +52,16 @@ namespace AutoStatus
             {
                 var statusList = await tmService.GetData(collectionUri, projectName, folders);
                 var membersList = tmService.GetTeamMembers();
+                foreach (var i in statusList)
+                {
+                  foreach(var j in membersList)
+                    {
+                        if(j.DisplayName == i.AssignedTo)
+                        {
+                            j.IsStatusFilled = true;
+                        }
+                    }
+                }
                 statusHtml = emailSender.GetEmailBody(statusList);
                 result.MembersList = membersList;
                 result.StatusHtml = statusHtml;
@@ -99,19 +109,26 @@ namespace AutoStatus
            return emailSender.SendStatusEmail(statusHtml);
         }
 
-        public bool NotifyUser(string toEmail)
-        {
-            string subject = ConfigurationManager.AppSettings.Get("NotifyUserSubject"); 
-            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            var notifyUserHTMLPath = rootPath + "/Assets/NotifyUser.html";
-            var htmlString = File.ReadAllText(notifyUserHTMLPath);
-
-            return emailSender.SendUserNotificationEmail(htmlString, toEmail, subject);
-        }
-
         private List<string> ExtractFolderNames(string folderHierarchy, char seperator)
         {
             return folderHierarchy.Split(seperator).ToList();
+        }
+
+        public bool Notify(List<MembersInfo> members)
+        {
+            string subject = ConfigurationManager.AppSettings.Get("NotifyUserSubject");
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            var notifyUserHTMLPath = rootPath + "/Assets/NotifyUser.html";
+            var htmlString = File.ReadAllText(notifyUserHTMLPath);
+            List<string> toEmails = new List<string>();
+            foreach (var member in members)
+            {
+                if (!member.IsStatusFilled)
+                {
+                    toEmails.Add(member.MailAddress);
+                }
+            }
+            return emailSender.SendUserNotificationEmail(htmlString, toEmails, subject);
         }
     }
 }

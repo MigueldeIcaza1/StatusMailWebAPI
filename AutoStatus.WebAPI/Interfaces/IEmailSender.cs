@@ -9,6 +9,6 @@ namespace AutoStatus.WebAPI.Interfaces
         string GetEmailBody(List<StatusRecord> workItems);
         // void SendEmail(List<StatusRecord> statusList);
         bool SendStatusEmail(string statusList);
-        bool SendUserNotificationEmail(string htmlString, string toEmail, string subject, string ccMailAddress = null);
+        bool SendUserNotificationEmail(string htmlString, List<string> toEmail, string subject, string ccMailAddress = null);
     }
 }

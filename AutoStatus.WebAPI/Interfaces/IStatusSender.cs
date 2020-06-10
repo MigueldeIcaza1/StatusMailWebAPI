@@ -10,6 +10,6 @@ namespace AutoStatus.WebAPI.Interfaces
         Task<APIResponse> GetStatus(string statusType = null);
         bool SendMail(string statusHtml);
         void SendMail(List<StatusRecord> statusList);
-        bool NotifyUser(string htmlString);
+        bool Notify(List<MembersInfo> members);
     }
 }

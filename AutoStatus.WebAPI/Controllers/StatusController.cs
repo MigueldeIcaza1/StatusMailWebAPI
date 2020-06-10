@@ -45,11 +45,10 @@ namespace AutoStatus.WebAPI.Controllers
 
         [HttpPost]
         [Route("api/status/notifyUser")]
-        public bool NotifyUser([FromBody] string userMailAddress)
+        public bool Notify([FromBody] List<MembersInfo> members)
         {
-            return statusSender.NotifyUser(userMailAddress);
+            return statusSender.Notify(members);
         }
-
 
     }
 }
