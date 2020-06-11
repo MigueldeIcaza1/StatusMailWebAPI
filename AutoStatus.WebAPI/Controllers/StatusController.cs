@@ -6,6 +6,7 @@ using System.Web.Http;
 using AutoStatus.WebAPI.Enums;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
 namespace AutoStatus.WebAPI.Controllers
 {
@@ -48,6 +49,13 @@ namespace AutoStatus.WebAPI.Controllers
         public bool Notify([FromBody] List<MembersInfo> members)
         {
             return statusSender.Notify(members);
+        }
+
+        [HttpGet]
+        [Route("api/status/getallqueries")]
+        public List<QueryHierarchyItem> GetAllQueries()
+        {
+            return statusSender.GetAllQueries();
         }
 
     }

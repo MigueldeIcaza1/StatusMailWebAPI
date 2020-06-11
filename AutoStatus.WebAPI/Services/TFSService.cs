@@ -196,5 +196,12 @@ namespace AutoStatus.WebAPI.Services
                     $"{item.AssignedTo}");
             }
         }
+
+        public async Task<List<QueryHierarchyItem>> GetAllQueries(Uri collectionUri, string projectName)
+        {
+            witClient = await ConnectToTFS(collectionUri);
+            var queryHierarchyItems = witClient.GetQueriesAsync(projectName, depth: 2).Result;
+            return queryHierarchyItems;
+        }
     }
 }

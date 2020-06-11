@@ -1,4 +1,5 @@
 ﻿using AutoStatus.WebAPI.Models;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace AutoStatus.WebAPI.Interfaces
         bool SendMail(string statusHtml);
         void SendMail(List<StatusRecord> statusList);
         bool Notify(List<MembersInfo> members);
+        List<QueryHierarchyItem> GetAllQueries();
     }
 }

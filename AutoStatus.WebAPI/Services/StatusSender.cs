@@ -9,6 +9,7 @@ using AutoStatus.WebAPI.Enums;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 using EmailSender;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Newtonsoft.Json;
 
 namespace AutoStatus
@@ -54,9 +55,9 @@ namespace AutoStatus
                 var membersList = tmService.GetTeamMembers();
                 foreach (var i in statusList)
                 {
-                  foreach(var j in membersList)
+                    foreach (var j in membersList)
                     {
-                        if(j.DisplayName == i.AssignedTo)
+                        if (j.DisplayName == i.AssignedTo)
                         {
                             j.IsStatusFilled = true;
                         }
@@ -101,12 +102,12 @@ namespace AutoStatus
 
         public void SendMail(List<StatusRecord> statusList)
         {
-           // emailSender.SendEmail(statusList);
+            // emailSender.SendEmail(statusList);
         }
 
         public bool SendMail(string statusHtml)
         {
-           return emailSender.SendStatusEmail(statusHtml);
+            return emailSender.SendStatusEmail(statusHtml);
         }
 
         private List<string> ExtractFolderNames(string folderHierarchy, char seperator)
@@ -129,6 +130,22 @@ namespace AutoStatus
                 }
             }
             return emailSender.SendUserNotificationEmail(htmlString, toEmails, subject);
+        }
+
+        public List<QueryHierarchyItem> GetAllQueries()
+        {
+            var collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
+            string projectName = ConfigurationManager.AppSettings.Get("projectName");
+            List<QueryHierarchyItem> queriesList = new List<QueryHierarchyItem>();
+            try
+            {
+                queriesList = tmService.GetAllQueries(collectionUri, projectName).Result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception :" + ex.Message);
+            }
+            return queriesList;
         }
     }
 }
