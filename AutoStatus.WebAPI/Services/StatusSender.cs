@@ -25,70 +25,56 @@ namespace AutoStatus
             emailSender = _emailSender;
         }
 
-        public async Task<APIResponse> GetStatus(string statusType = null)
+        public async Task<APIResponse> GetStatus(string statusType = null, string folderHierarchy = null)
         {
             if (string.IsNullOrEmpty(statusType))
             {
                 statusType = StatusType.Daily.ToString();
             }
+
+            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
+            string projectName = ConfigurationManager.AppSettings.Get("projectName");
+
             if (statusType.ToLower() == StatusType.Daily.ToString().ToLower())
             {
-                return await GetStatus();
+                folderHierarchy = ConfigurationManager.AppSettings.Get("queryFolderHierarchy");
             }
             else if (statusType.ToLower() == StatusType.Monthly.ToString().ToLower())
             {
-                return await GetMonthlyStatus();
+                folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyQueryFolderHierarchy");
             }
-            return null;
-        }
-        public async Task<APIResponse> GetStatus()
-        {
-            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
-            string projectName = ConfigurationManager.AppSettings.Get("projectName");
-            string folderHierarchy = ConfigurationManager.AppSettings.Get("queryFolderHierarchy");
-            var folders = ExtractFolderNames(folderHierarchy, ',');
+
+            var folders = ExtractFolderNames(folderHierarchy, '/');
             var statusHtml = string.Empty;
             var result = new APIResponse();
             try
             {
                 var statusList = await tmService.GetData(collectionUri, projectName, folders);
                 var membersList = tmService.GetTeamMembers();
-                foreach (var i in statusList)
+
+                if (statusType.ToLower() == StatusType.Daily.ToString().ToLower())
                 {
-                    foreach (var j in membersList)
+                    foreach (var statusItem in statusList)
                     {
-                        if (j.DisplayName == i.AssignedTo)
+                        foreach (var member in membersList)
                         {
-                            j.IsStatusFilled = true;
+                            if (member.DisplayName == statusItem.AssignedTo)
+                            {
+                                member.IsStatusFilled = true;
+                            }
                         }
                     }
                 }
-                statusHtml = emailSender.GetEmailBody(statusList);
-                result.MembersList = membersList;
-                result.StatusHtml = statusHtml;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception :" + ex.Message);
-            }
 
-            return result;
-        }
-
-        public async Task<APIResponse> GetMonthlyStatus()
-        {
-            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
-            string projectName = ConfigurationManager.AppSettings.Get("projectName");
-            string folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyQueryFolderHierarchy");
-            var folders = ExtractFolderNames(folderHierarchy, ',');
-            var statusHtml = string.Empty;
-            var result = new APIResponse();
-            try
-            {
-                var statusList = await tmService.GetData(collectionUri, projectName, folders);
-                var membersList = tmService.GetTeamMembers();
-                //statusHtml = emailSender.GetEmailBody(statusList);
-                statusHtml = MonthlyEmailSender.GetEmailBody(statusList);
+                if (statusType.ToLower() == StatusType.Monthly.ToString().ToLower())
+                {
+                    statusHtml = MonthlyEmailSender.GetEmailBody(statusList);
+                }
+                else
+                {
+                    statusHtml = emailSender.GetEmailBody(statusList
+);
+                }
                 result.MembersList = membersList;
                 result.StatusHtml = statusHtml;
             }

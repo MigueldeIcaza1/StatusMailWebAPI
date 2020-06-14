@@ -27,24 +27,26 @@ namespace AutoStatus.WebAPI.Services
 
             WorkItemQueryResult queryResult = this.witClient.QueryByIdAsync(query.Id).Result;
             Console.WriteLine("Executed the Query");
+            List<StatusRecord> statusRecords = null;
 
-            List<StatusRecord> statusRecords = await MapQueryResultToStatusRecords(queryResult);
-
-            PrintStatusRecords(statusRecords);
+            if (queryResult != null && queryResult.WorkItemRelations != null)
+            {
+                statusRecords = await MapQueryResultToStatusRecords(queryResult);
+            }
+            else if (queryResult != null &&  queryResult.WorkItems != null)
+            {
+                statusRecords = await MapCustomQueryResultToStatusRecords(queryResult);
+            }
+            // PrintStatusRecords(statusRecords);
 
             return statusRecords;
         }
-       
+
         private async Task<QueryHierarchyItem> GetQueryFromTFS(Uri collectionUri, string projectName, List<string> queryFolderHierarchy)
-         {
+        {
             witClient = await ConnectToTFS(collectionUri);
-
-            Console.WriteLine("Connected to TFS");
-            
             List<QueryHierarchyItem> queryHierarchyItems = this.witClient.GetQueriesAsync(projectName, depth: 2).Result;
-
             // QueryHierarchyItem queryHierarchyItem = queryHierarchyItems.FirstOrDefault(qhi => qhi.Name.Equals("Shared Queries"));
-
             QueryHierarchyItem queryHierarchyItem = queryHierarchyItems.FirstOrDefault();
 
             for (int index = 0; index < queryFolderHierarchy.Count; index++)
@@ -76,12 +78,12 @@ namespace AutoStatus.WebAPI.Services
         }
 
         // TODO: Make this query configurable
-        private async Task<List<StatusRecord>> MapQueryResultToStatusRecords(WorkItemQueryResult queryResult) 
+        private async Task<List<StatusRecord>> MapQueryResultToStatusRecords(WorkItemQueryResult queryResult)
         {
             var StatusRecordlist = new List<StatusRecord>();
 
             var count = 1;
-            foreach (WorkItemLink item in queryResult.WorkItemRelations)
+            foreach (var item in queryResult.WorkItemRelations)
             {
                 if (item.Source != null)
                 {
@@ -102,6 +104,47 @@ namespace AutoStatus.WebAPI.Services
                         {
                             Id = item.Target.Id,
                             Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Target.Id).ToString()
+                        },
+                        TaskTitle = workItemInstance.Fields["System.Title"].ToString(),
+                        TaskStatus = workItemStatus,
+                        AssignedTo = ((IdentityRef)workItemInstance.Fields["System.AssignedTo"]).DisplayName,
+                        ParentTitle = parentItemInstance?.Fields["System.Title"]?.ToString(),
+                        CompletedWork = workItemInstance.Fields.Keys.Contains("Microsoft.VSTS.Scheduling.CompletedWork") ? workItemInstance?.Fields["Microsoft.VSTS.Scheduling.CompletedWork"]?.ToString() : string.Empty
+                    };
+
+                    StatusRecordlist.Add(record);
+                }
+            }
+            return StatusRecordlist;
+
+        }
+
+        private async Task<List<StatusRecord>> MapCustomQueryResultToStatusRecords(WorkItemQueryResult queryResult)
+        {
+            var StatusRecordlist = new List<StatusRecord>();
+
+            var count = 1;
+            if (queryResult.WorkItems != null)
+            {
+                foreach (var item in queryResult.WorkItems)
+                {
+                    var workItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
+                    var parentItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
+
+                    Enum.TryParse(workItemInstance.Fields["System.State"].ToString().Replace(" ", string.Empty), out CurrentStatus workItemStatus);
+
+                    var record = new StatusRecord()
+                    {
+                        SerialNumber = count++,
+                        ParentIdWithLink = new IdWithLink()
+                        {
+                            Id = item.Id,
+                            Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
+                        },
+                        TaskIdWithLink = new IdWithLink()
+                        {
+                            Id = item.Id,
+                            Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
                         },
                         TaskTitle = workItemInstance.Fields["System.Title"].ToString(),
                         TaskStatus = workItemStatus,
@@ -201,7 +244,18 @@ namespace AutoStatus.WebAPI.Services
         {
             witClient = await ConnectToTFS(collectionUri);
             var queryHierarchyItems = witClient.GetQueriesAsync(projectName, depth: 2).Result;
-            return queryHierarchyItems;
+            var result = GetQueriesList(queryHierarchyItems);
+            return result;
+        }
+
+        private List<QueryHierarchyItem> GetQueriesList(List<QueryHierarchyItem> queryHierarchyItems)
+        {
+            var list = new List<QueryHierarchyItem>();
+            foreach (var item in queryHierarchyItems)
+            {
+                list.AddRange(item.Children);
+            }
+            return list;
         }
     }
 }
