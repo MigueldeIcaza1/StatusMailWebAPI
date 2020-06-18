@@ -14,13 +14,15 @@ namespace AutoStatus.WebAPI.Controllers
     public class StatusController : ApiController
     {
         private readonly IStatusSender statusSender;
+        private readonly IConfigurationReader configurationReader;
         public StatusController()
         {
 
         }
-        public StatusController(IStatusSender _statusSender)
+        public StatusController(IStatusSender _statusSender, IConfigurationReader _configurationReader)
         {
             statusSender = _statusSender;
+            configurationReader = _configurationReader;
         }
 
         [HttpGet]
@@ -49,6 +51,13 @@ namespace AutoStatus.WebAPI.Controllers
         public List<QueryHierarchyItem> GetAllQueries()
         {
             return statusSender.GetAllQueries();
+        }
+
+        [HttpGet]
+        [Route("api/status/getconfigurations")]
+        public Dictionary<string,string> GetConfigurations()
+        {
+            return configurationReader.GetConfigurations();
         }
 
     }
