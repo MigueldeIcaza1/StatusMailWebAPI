@@ -60,5 +60,12 @@ namespace AutoStatus.WebAPI.Controllers
             return configurationReader.GetConfigurations();
         }
 
+        [HttpPost]
+        [Route("api/status/saveConfigutaions")]
+        public bool SaveConfigurations(List<ConfigurationMap> configList)
+        {
+            return configurationReader.SaveConfigurations(configList);
+        }
+
     }
 }

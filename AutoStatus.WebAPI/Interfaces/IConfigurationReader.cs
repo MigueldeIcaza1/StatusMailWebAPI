@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoStatus.WebAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,5 +10,6 @@ namespace AutoStatus.WebAPI.Interfaces
     public interface IConfigurationReader
     {
         Dictionary<string, string> GetConfigurations();
+        bool SaveConfigurations(List<ConfigurationMap> list);
     }
 }

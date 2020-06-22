@@ -354,6 +354,7 @@
     <Compile Include="Interfaces\ITaskManagementService.cs" />
     <Compile Include="Models\APIResponse.cs" />
     <Compile Include="Enums\CurrentStatus.cs" />
+    <Compile Include="Models\ConfigurationMap.cs" />
     <Compile Include="Models\IdWithLink.cs" />
     <Compile Include="Models\MembersInfo.cs" />
     <Compile Include="Models\StatusRecord.cs" />
