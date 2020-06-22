@@ -98,7 +98,7 @@ namespace AutoStatus.WebAPI.Services
             Console.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         }
 
-        public bool SendUserNotificationEmail(string htmlString, string toEmail, string subject, string ccMailAddress = null)
+        public bool SendUserNotificationEmail(string htmlString, List<string> toEmail, string subject, string ccMailAddress = null)
         {
             try
             {
@@ -108,7 +108,11 @@ namespace AutoStatus.WebAPI.Services
                 MailMessage message = new MailMessage();
                 SmtpClient smtp = new SmtpClient();
                 message.From = new MailAddress(fromEmail);
-                message.To.Add(new MailAddress(toEmail));
+
+                foreach (var email in toEmail)
+                {
+                    message.To.Add(new MailAddress(email));
+                }
 
                 if (!string.IsNullOrEmpty(ccMailAddress))
                 {

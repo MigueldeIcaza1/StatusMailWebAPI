@@ -35,6 +35,7 @@ namespace AutoStatus.WebAPI.App_Start
             // var builder = new ContainerBuilder();
             builder.RegisterType<TFSService>().As<ITaskManagementService>();
             builder.RegisterType<AutoStatus.WebAPI.Services.EmailSender>().As<IEmailSender>();
+            builder.RegisterType<ConfigurationReader>().As<IConfigurationReader>();
             builder.RegisterType<StatusSender>().As<IStatusSender>();
 
             // var container = builder.Build();

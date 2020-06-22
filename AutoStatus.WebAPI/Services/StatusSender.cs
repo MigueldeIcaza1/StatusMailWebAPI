@@ -9,6 +9,7 @@ using AutoStatus.WebAPI.Enums;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 using EmailSender;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Newtonsoft.Json;
 
 namespace AutoStatus
@@ -24,60 +25,56 @@ namespace AutoStatus
             emailSender = _emailSender;
         }
 
-        public async Task<APIResponse> GetStatus(string statusType = null)
+        public async Task<APIResponse> GetStatus(string statusType = null, string folderHierarchy = null)
         {
             if (string.IsNullOrEmpty(statusType))
             {
                 statusType = StatusType.Daily.ToString();
             }
+
+            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
+            string projectName = ConfigurationManager.AppSettings.Get("projectName");
+
             if (statusType.ToLower() == StatusType.Daily.ToString().ToLower())
             {
-                return await GetStatus();
+                folderHierarchy = ConfigurationManager.AppSettings.Get("queryFolderHierarchy");
             }
             else if (statusType.ToLower() == StatusType.Monthly.ToString().ToLower())
             {
-                return await GetMonthlyStatus();
+                folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyQueryFolderHierarchy");
             }
-            return null;
-        }
-        public async Task<APIResponse> GetStatus()
-        {
-            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
-            string projectName = ConfigurationManager.AppSettings.Get("projectName");
-            string folderHierarchy = ConfigurationManager.AppSettings.Get("queryFolderHierarchy");
-            var folders = ExtractFolderNames(folderHierarchy, ',');
+
+            var folders = ExtractFolderNames(folderHierarchy, '/');
             var statusHtml = string.Empty;
             var result = new APIResponse();
             try
             {
                 var statusList = await tmService.GetData(collectionUri, projectName, folders);
                 var membersList = tmService.GetTeamMembers();
-                statusHtml = emailSender.GetEmailBody(statusList);
-                result.MembersList = membersList;
-                result.StatusHtml = statusHtml;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception :" + ex.Message);
-            }
 
-            return result;
-        }
+                if (statusType.ToLower() == StatusType.Daily.ToString().ToLower())
+                {
+                    foreach (var statusItem in statusList)
+                    {
+                        foreach (var member in membersList)
+                        {
+                            if (member.DisplayName == statusItem.AssignedTo)
+                            {
+                                member.IsStatusFilled = true;
+                            }
+                        }
+                    }
+                }
 
-        public async Task<APIResponse> GetMonthlyStatus()
-        {
-            Uri collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
-            string projectName = ConfigurationManager.AppSettings.Get("projectName");
-            string folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyQueryFolderHierarchy");
-            var folders = ExtractFolderNames(folderHierarchy, ',');
-            var statusHtml = string.Empty;
-            var result = new APIResponse();
-            try
-            {
-                var statusList = await tmService.GetData(collectionUri, projectName, folders);
-                var membersList = tmService.GetTeamMembers();
-                //statusHtml = emailSender.GetEmailBody(statusList);
-                statusHtml = MonthlyEmailSender.GetEmailBody(statusList);
+                if (statusType.ToLower() == StatusType.Monthly.ToString().ToLower())
+                {
+                    statusHtml = MonthlyEmailSender.GetEmailBody(statusList);
+                }
+                else
+                {
+                    statusHtml = emailSender.GetEmailBody(statusList
+);
+                }
                 result.MembersList = membersList;
                 result.StatusHtml = statusHtml;
             }
@@ -91,27 +88,50 @@ namespace AutoStatus
 
         public void SendMail(List<StatusRecord> statusList)
         {
-           // emailSender.SendEmail(statusList);
+            // emailSender.SendEmail(statusList);
         }
 
         public bool SendMail(string statusHtml)
         {
-           return emailSender.SendStatusEmail(statusHtml);
-        }
-
-        public bool NotifyUser(string toEmail)
-        {
-            string subject = ConfigurationManager.AppSettings.Get("NotifyUserSubject"); 
-            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            var notifyUserHTMLPath = rootPath + "/Assets/NotifyUser.html";
-            var htmlString = File.ReadAllText(notifyUserHTMLPath);
-
-            return emailSender.SendUserNotificationEmail(htmlString, toEmail, subject);
+            return emailSender.SendStatusEmail(statusHtml);
         }
 
         private List<string> ExtractFolderNames(string folderHierarchy, char seperator)
         {
             return folderHierarchy.Split(seperator).ToList();
+        }
+
+        public bool Notify(List<MembersInfo> members)
+        {
+            string subject = ConfigurationManager.AppSettings.Get("NotifyUserSubject");
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            var notifyUserHTMLPath = rootPath + "/Assets/NotifyUser.html";
+            var htmlString = File.ReadAllText(notifyUserHTMLPath);
+            List<string> toEmails = new List<string>();
+            foreach (var member in members)
+            {
+                if (!member.IsStatusFilled)
+                {
+                    toEmails.Add(member.MailAddress);
+                }
+            }
+            return emailSender.SendUserNotificationEmail(htmlString, toEmails, subject);
+        }
+
+        public List<QueryHierarchyItem> GetAllQueries()
+        {
+            var collectionUri = new Uri(ConfigurationManager.AppSettings.Get("collectionUri"));
+            string projectName = ConfigurationManager.AppSettings.Get("projectName");
+            List<QueryHierarchyItem> queriesList = new List<QueryHierarchyItem>();
+            try
+            {
+                queriesList = tmService.GetAllQueries(collectionUri, projectName).Result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception :" + ex.Message);
+            }
+            return queriesList;
         }
     }
 }
