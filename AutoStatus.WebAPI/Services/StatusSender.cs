@@ -37,11 +37,11 @@ namespace AutoStatus
 
             if (statusType.ToLower() == StatusType.Daily.ToString().ToLower())
             {
-                folderHierarchy = ConfigurationManager.AppSettings.Get("queryFolderHierarchy");
+                folderHierarchy = ConfigurationManager.AppSettings.Get("DailyStatusQueryFolderHierarchy");
             }
             else if (statusType.ToLower() == StatusType.Monthly.ToString().ToLower())
             {
-                folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyQueryFolderHierarchy");
+                folderHierarchy = ConfigurationManager.AppSettings.Get("MonthlyStatusQueryFolderHierarchy");
             }
 
             var folders = ExtractFolderNames(folderHierarchy, '/');
@@ -72,9 +72,20 @@ namespace AutoStatus
                 }
                 else
                 {
-                    statusHtml = emailSender.GetEmailBody(statusList
-);
+                    statusHtml = emailSender.GetEmailBody(statusList);
                 }
+
+                var subject = ConfigurationManager.AppSettings.Get("subject");
+                var toEmail = ConfigurationManager.AppSettings.Get("toMail");
+                var ccMail = ConfigurationManager.AppSettings.Get("ccMail");
+
+                var mailInfo = new MailInfo();
+
+                mailInfo.Subject = subject;
+                mailInfo.ToMailAdress = toEmail;
+                mailInfo.CcMailAdress = ccMail;
+
+                result.MailInfo = mailInfo;
                 result.MembersList = membersList;
                 result.StatusHtml = statusHtml;
             }

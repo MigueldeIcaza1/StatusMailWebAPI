@@ -9,6 +9,14 @@ namespace AutoStatus.WebAPI.Models
     {
         public string StatusHtml { get; set; }
         public List<MembersInfo> MembersList { get; set; }
+        public MailInfo MailInfo { get; set; }
 
+    }
+
+    public class MailInfo
+    {
+        public string Subject { get; set; }
+        public string ToMailAdress { get; set; }
+        public string CcMailAdress { get; set; }
     }
 }
