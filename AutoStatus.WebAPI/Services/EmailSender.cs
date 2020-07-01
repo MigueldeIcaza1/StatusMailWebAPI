@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Configuration;
 using System.Net.Mail;
+using AutoStatus.WebAPI.Helpers;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 
@@ -70,7 +71,7 @@ namespace AutoStatus.WebAPI.Services
         {
             var fromEmail = ConfigurationManager.AppSettings.Get("fromMail");
             var toEmail = ConfigurationManager.AppSettings.Get("toMail");
-            var subject = ConfigurationManager.AppSettings.Get("subject");
+            var subject = Helper.GetSubject();
             var smtpSection = (SmtpSection)ConfigurationManager.GetSection("mailSettings/smtp_1");
 
             MailMessage message = new MailMessage();

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoStatus.WebAPI.Enums;
+using AutoStatus.WebAPI.Helpers;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
 using EmailSender;
@@ -75,7 +76,7 @@ namespace AutoStatus
                     statusHtml = emailSender.GetEmailBody(statusList);
                 }
 
-                var subject = ConfigurationManager.AppSettings.Get("subject");
+                var subject = Helper.GetSubject();
                 var toEmail = ConfigurationManager.AppSettings.Get("toMail");
                 var ccMail = ConfigurationManager.AppSettings.Get("ccMail");
 
