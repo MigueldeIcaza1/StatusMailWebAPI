@@ -128,32 +128,40 @@ namespace AutoStatus.WebAPI.Services
             {
                 foreach (var item in queryResult.WorkItems)
                 {
-                    var workItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
-                    var parentItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
-
-                    Enum.TryParse(workItemInstance.Fields["System.State"].ToString().Replace(" ", string.Empty), out CurrentStatus workItemStatus);
-
-                    var record = new StatusRecord()
+                    try
                     {
-                        SerialNumber = count++,
-                        ParentIdWithLink = new IdWithLink()
-                        {
-                            Id = item.Id,
-                            Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
-                        },
-                        TaskIdWithLink = new IdWithLink()
-                        {
-                            Id = item.Id,
-                            Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
-                        },
-                        TaskTitle = workItemInstance.Fields["System.Title"].ToString(),
-                        TaskStatus = workItemStatus,
-                        AssignedTo = ((IdentityRef)workItemInstance.Fields["System.AssignedTo"]).DisplayName,
-                        ParentTitle = parentItemInstance?.Fields["System.Title"]?.ToString(),
-                        CompletedWork = workItemInstance.Fields.Keys.Contains("Microsoft.VSTS.Scheduling.CompletedWork") ? workItemInstance?.Fields["Microsoft.VSTS.Scheduling.CompletedWork"]?.ToString() : string.Empty
-                    };
+                        var workItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
+                        var parentItemInstance = this.witClient.GetWorkItemAsync(item.Id).Result;
 
-                    StatusRecordlist.Add(record);
+                        Enum.TryParse(workItemInstance.Fields["System.State"].ToString().Replace(" ", string.Empty), out CurrentStatus workItemStatus);
+
+                        var record = new StatusRecord()
+                        {
+                            SerialNumber = count++,
+                            ParentIdWithLink = new IdWithLink()
+                            {
+                                Id = item.Id,
+                                Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
+                            },
+                            TaskIdWithLink = new IdWithLink()
+                            {
+                                Id = item.Id,
+                                Link = this.hyperLinkService.GetWorkItemEditorUrl(item.Id).ToString()
+                            },
+                            TaskTitle = workItemInstance.Fields["System.Title"].ToString(),
+                            TaskStatus = workItemStatus,
+                            AssignedTo = ((IdentityRef)workItemInstance.Fields["System.AssignedTo"])?.DisplayName,
+                            ParentTitle = parentItemInstance?.Fields["System.Title"]?.ToString(),
+                            CompletedWork = workItemInstance.Fields.Keys.Contains("Microsoft.VSTS.Scheduling.CompletedWork") ? workItemInstance?.Fields["Microsoft.VSTS.Scheduling.CompletedWork"]?.ToString() : string.Empty
+                        };
+
+
+                        StatusRecordlist.Add(record);
+                    } 
+                    catch(Exception ex)
+                    {
+                         continue;
+                    }
                 }
             }
             return StatusRecordlist;
