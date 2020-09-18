@@ -9,12 +9,14 @@ using System.Net.Mail;
 using AutoStatus.WebAPI.Helpers;
 using AutoStatus.WebAPI.Interfaces;
 using AutoStatus.WebAPI.Models;
+using NLog;
 
 namespace AutoStatus.WebAPI.Services
 {
     public class EmailSender : IEmailSender
     {
         private readonly int MaxRetryCount = 5;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public EmailSender()
         {
@@ -136,23 +138,31 @@ namespace AutoStatus.WebAPI.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception::" + ex);
+                logger.Info("Exception in SendUserNotificationEmail:::   " + ex.StackTrace + Environment.NewLine + DateTime.Now);
                 return false;
             }
         }
 
         public string GetEmailBody(List<StatusRecord> workItems)
         {
-            // var rootPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
-            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            var dailyStatusHTMLPath = rootPath + "/Assets/DailyStatus.html";
-            var dailyStatusHtml = File.ReadAllText(dailyStatusHTMLPath);
+            string dailyStatusHtml = string.Empty;
+            try
+            {
+                // var rootPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+                var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+                var dailyStatusHTMLPath = rootPath + "/Assets/DailyStatus.html";
+                dailyStatusHtml = File.ReadAllText(dailyStatusHTMLPath);
 
-            var statusRowHtmlPath = rootPath + "/Assets/StatusRow.html";
-            var statusRowHtml = File.ReadAllText(statusRowHtmlPath);
-            var allStatusRowsHtml = AppenedStatusRows(statusRowHtml, workItems);
+                var statusRowHtmlPath = rootPath + "/Assets/StatusRow.html";
+                var statusRowHtml = File.ReadAllText(statusRowHtmlPath);
+                var allStatusRowsHtml = AppenedStatusRows(statusRowHtml, workItems);
 
-            dailyStatusHtml = dailyStatusHtml.Replace("#StatusRows#", allStatusRowsHtml);
+                dailyStatusHtml = dailyStatusHtml.Replace("#StatusRows#", allStatusRowsHtml);
+            }
+            catch (Exception ex)
+            {
+                logger.Info("Exception in GetEmailBody:::   " + ex.StackTrace + Environment.NewLine + DateTime.Now);
+            }
             return dailyStatusHtml;
         }
 
