@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,6 +11,7 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.Client;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using NLog;
 
@@ -87,13 +89,25 @@ namespace AutoStatus.WebAPI.Services
 
         private async Task<WorkItemTrackingHttpClient> ConnectToTFS(Uri collectionUri) // Supressed the no await warning
         {
-            VssConnection connection = new VssConnection(collectionUri, new VssClientCredentials());
+            var pat = ConfigurationManager.AppSettings.Get("AccessToken");
+            VssBasicCredential vssBasicCredential = new VssBasicCredential(string.Empty, pat);
 
-            using (TfsTeamProjectCollection collection = new TfsTeamProjectCollection(collectionUri, new VssClientCredentials()))
+
+            VssConnection connection = new VssConnection(collectionUri, vssBasicCredential);
+
+            try
             {
-                collection.EnsureAuthenticated();
-                this.hyperLinkService =
-                   collection.GetService<TswaClientHyperlinkService>();
+
+                using (TfsTeamProjectCollection collection = new TfsTeamProjectCollection(collectionUri, vssBasicCredential))
+                {
+                    collection.EnsureAuthenticated();
+                    this.hyperLinkService =
+                       collection.GetService<TswaClientHyperlinkService>();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Info("Exception in ConnectToTFS():::   " + ex.StackTrace + Environment.NewLine + DateTime.Now);
             }
 
             return connection.GetClient<WorkItemTrackingHttpClient>();
@@ -208,20 +222,20 @@ namespace AutoStatus.WebAPI.Services
         public List<MembersInfo> GetTeamMembers()
         {
             var list = new List<MembersInfo>();
-            var item1 = new MembersInfo() { DisplayName = "ravi.kannegundla", MailAddress = "ravi.kannegundla@ggktech.com", Origin = "aad" };
-            var item2 = new MembersInfo() { DisplayName = "Chaitanya.Satkuri", MailAddress = "Chaitanya.Satkuri@ggktech.com", Origin = "aad" };
-            var item3 = new MembersInfo() { DisplayName = "Sravya.Konapalli", MailAddress = "Sravya.Konapalli@ggktech.com", Origin = "aad" };
-            var item4 = new MembersInfo() { DisplayName = "Junez Riyaz Shaik", MailAddress = "riyaz.shaik@ggktech.com", Origin = "aad" };
-            var item5 = new MembersInfo() { DisplayName = "rajesh.ganapuram", MailAddress = "rajesh.ganapuram@ggktech.com", Origin = "aad" };
-            var item6 = new MembersInfo() { DisplayName = "srikanth.rokkam", MailAddress = "srikanth.rokkam@ggktech.com", Origin = "aad" };
-            var item7 = new MembersInfo() { DisplayName = "mahalakshmi.gunti", MailAddress = "mahalakshmi.gunti@ggktech.com", Origin = "aad" };
-            var item8 = new MembersInfo() { DisplayName = "madhuri.nandamuri", MailAddress = "madhuri.nandamuri@ggktech.com", Origin = "aad" };
-            var item9 = new MembersInfo() { DisplayName = "geetha.burugupalli", MailAddress = "geetha.burugupalli@ggktech.com", Origin = "aad" };
-            var item10 = new MembersInfo() { DisplayName = "siddarth.kalidindi", MailAddress = "siddarth.kalidindi@ggktech.com", Origin = "aad" };
-            var item11 = new MembersInfo() { DisplayName = "brahmateja.pulipati", MailAddress = "brahmateja.pulipati@ggktech.com", Origin = "aad" };
-            var item12 = new MembersInfo() { DisplayName = "Sudhir Bandi", MailAddress = "Sudhir.Bandi@ggktech.com", Origin = "aad" };
+            var item1 = new MembersInfo() { DisplayName = "ravi.kannegundla", MailAddress = "ravi.kannegundla@acsicorp.com", Origin = "aad" };
+            var item2 = new MembersInfo() { DisplayName = "Chaitanya.Satkuri", MailAddress = "Chaitanya.Satkuri@acsicorp.com", Origin = "aad" };
+            var item3 = new MembersInfo() { DisplayName = "Sravya.Konapalli", MailAddress = "Sravya.Konapalli@acsicorp.com", Origin = "aad" };
+            var item4 = new MembersInfo() { DisplayName = "Junez Riyaz Shaik", MailAddress = "riyaz.shaik@acsicorp.com", Origin = "aad" };
+            var item5 = new MembersInfo() { DisplayName = "rajesh.ganapuram", MailAddress = "rajesh.ganapuram@acsicorp.com", Origin = "aad" };
+            var item6 = new MembersInfo() { DisplayName = "srikanth.rokkam", MailAddress = "srikanth.rokkam@acsicorp.com", Origin = "aad" };
+            var item7 = new MembersInfo() { DisplayName = "mahalakshmi.gunti", MailAddress = "mahalakshmi.gunti@acsicorp.com", Origin = "aad" };
+            var item8 = new MembersInfo() { DisplayName = "madhuri.nandamuri", MailAddress = "madhuri.nandamuri@acsicorp.com", Origin = "aad" };
+            var item9 = new MembersInfo() { DisplayName = "geetha.burugupalli", MailAddress = "geetha.burugupalli@acsicorp.com", Origin = "aad" };
+            var item10 = new MembersInfo() { DisplayName = "siddarth.kalidindi", MailAddress = "siddarth.kalidindi@acsicorp.com", Origin = "aad" };
+            var item11 = new MembersInfo() { DisplayName = "brahmateja.pulipati", MailAddress = "brahmateja.pulipati@acsicorp.com", Origin = "aad" };
+            var item12 = new MembersInfo() { DisplayName = "Sudhir Bandi", MailAddress = "Sudhir.Bandi@acsicorp.com", Origin = "aad" };
 
-            var item13 = new MembersInfo() { DisplayName = "ankit.singh", MailAddress = "ankit.singh@ggktech.com", Origin = "aad" };
+            var item13 = new MembersInfo() { DisplayName = "ankit.singh", MailAddress = "ankit.singh@acsicorp.com", Origin = "aad" };
             var item14 = new MembersInfo() { DisplayName = "Ross Walsmith", MailAddress = "rwalsmith@kantola.com", Origin = "aad" };
             var item15 = new MembersInfo() { DisplayName = "ross walsmith.net", MailAddress = "ross@walsmith.net", Origin = "aad" };
 
@@ -237,7 +251,7 @@ namespace AutoStatus.WebAPI.Services
             list.Add(item10);
             list.Add(item11);
             list.Add(item12);
-            return list.Where(t => t.MailAddress.Contains("@ggktech")).ToList();
+            return list.Where(t => t.MailAddress.Contains("@acsicorp")).ToList();
         }
 
         //public async void GetMembers()

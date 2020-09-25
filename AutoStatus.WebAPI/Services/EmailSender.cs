@@ -71,34 +71,41 @@ namespace AutoStatus.WebAPI.Services
 
         public void SendEmail(string htmlString)
         {
-            var fromEmail = ConfigurationManager.AppSettings.Get("fromMail");
-            var toEmail = ConfigurationManager.AppSettings.Get("toMail");
-            var subject = Helper.GetSubject();
-            var smtpSection = (SmtpSection)ConfigurationManager.GetSection("mailSettings/smtp_1");
-
-            MailMessage message = new MailMessage();
-            SmtpClient smtp = new SmtpClient();
-            message.From = new MailAddress(fromEmail);
-            message.To.Add(new MailAddress(toEmail));
-
-            var ccMailAddress = ConfigurationManager.AppSettings.Get("ccMail");
-            if (!string.IsNullOrEmpty(ccMailAddress))
+            try
             {
-                message.CC.Add(new MailAddress(ccMailAddress));
-            }
+                var fromEmail = ConfigurationManager.AppSettings.Get("fromMail");
+                var toEmail = ConfigurationManager.AppSettings.Get("toMail");
+                var subject = Helper.GetSubject();
+                var smtpSection = (SmtpSection)ConfigurationManager.GetSection("mailSettings/smtp_1");
 
-            message.Subject = subject;
-            message.IsBodyHtml = true; //to make message body as html  
-            message.Body = htmlString;
-            smtp.Port = smtpSection.Network.Port;
-            smtp.Host = smtpSection.Network.Host; //for gmail host  
-            smtp.EnableSsl = true;
-            smtp.UseDefaultCredentials = false;
-            smtp.Credentials = new NetworkCredential(smtpSection.Network.UserName, smtpSection.Network.Password);
-            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-            smtp.Send(message);
-            Console.WriteLine("\n Mail sent successfully..!!!!");
-            Console.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+                MailMessage message = new MailMessage();
+                SmtpClient smtp = new SmtpClient();
+                message.From = new MailAddress(fromEmail);
+                message.To.Add(new MailAddress(toEmail));
+
+                var ccMailAddress = ConfigurationManager.AppSettings.Get("ccMail");
+                if (!string.IsNullOrEmpty(ccMailAddress))
+                {
+                    message.CC.Add(new MailAddress(ccMailAddress));
+                }
+
+                message.Subject = subject;
+                message.IsBodyHtml = true; //to make message body as html  
+                message.Body = htmlString;
+                smtp.Port = smtpSection.Network.Port;
+                smtp.Host = smtpSection.Network.Host; //for gmail host  
+                smtp.EnableSsl = true;
+                smtp.UseDefaultCredentials = true;
+                smtp.Credentials = new NetworkCredential(smtpSection.Network.UserName, smtpSection.Network.Password);
+                smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtp.Send(message);
+                Console.WriteLine("\n Mail sent successfully..!!!!");
+                Console.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+            } 
+            catch (Exception ex)
+            {
+                logger.Info("Exception in SendUserNotificationEmail:::   " + ex.Message + "Stack trace" + ex.StackTrace + Environment.NewLine + DateTime.Now);
+            }
         }
 
         public bool SendUserNotificationEmail(string htmlString, List<string> toEmail, string subject, string ccMailAddress = null)
@@ -138,7 +145,7 @@ namespace AutoStatus.WebAPI.Services
             }
             catch (Exception ex)
             {
-                logger.Info("Exception in SendUserNotificationEmail:::   " + ex.StackTrace + Environment.NewLine + DateTime.Now);
+                logger.Info("Exception in SendUserNotificationEmail:::   " + ex.Message + "Stack trace" + ex.StackTrace + Environment.NewLine + DateTime.Now);
                 return false;
             }
         }
